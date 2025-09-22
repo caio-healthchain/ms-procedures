@@ -1,0 +1,223 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Procedure {
+  id                    String            @id @default(cuid())
+  code                  String            @unique
+  name                  String
+  description           String
+  category              ProcedureCategory
+  suggestedPort         Int
+  actualPort            Int?
+  status                ProcedureStatus   @default(SCHEDULED)
+  scheduledDate         DateTime
+  performedDate         DateTime?
+  duration              Int // em minutos
+  complexity            ProcedureComplexity
+  anesthesiaType        AnesthesiaType
+  preOperativeExams     String[]
+  postOperativeInstructions String
+  complications         String?
+  notes                 String?
+  
+  // Relacionamentos
+  patientId             String
+  surgicalTeam          SurgicalTeamMember[]
+  materials             ProcedureMaterial[]
+  portValidations       PortValidation[]
+  
+  // Auditoria
+  createdAt             DateTime          @default(now())
+  updatedAt             DateTime          @updatedAt
+  deletedAt             DateTime?
+  
+  @@map("procedures")
+}
+
+model SurgicalTeamMember {
+  id          String        @id @default(cuid())
+  name        String
+  role        SurgicalRole
+  crm         String?
+  specialty   String?
+  
+  // Relacionamentos
+  procedureId String
+  procedure   Procedure     @relation(fields: [procedureId], references: [id], onDelete: Cascade)
+  
+  @@map("surgical_team_members")
+}
+
+model ProcedureMaterial {
+  id              String        @id @default(cuid())
+  code            String
+  name            String
+  quantity        Int
+  unitPrice       Decimal       @db.Decimal(10, 2)
+  totalPrice      Decimal       @db.Decimal(10, 2)
+  supplier        String?
+  batchNumber     String?
+  expirationDate  DateTime?
+  status          MaterialStatus @default(REQUESTED)
+  
+  // Relacionamentos
+  procedureId     String
+  procedure       Procedure     @relation(fields: [procedureId], references: [id], onDelete: Cascade)
+  
+  // Auditoria
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  
+  @@map("procedure_materials")
+}
+
+model PortValidation {
+  id              String    @id @default(cuid())
+  suggestedPort   Int
+  actualPort      Int
+  isValid         Boolean
+  discrepancy     Int
+  reason          String?
+  validatedBy     String?
+  validatedAt     DateTime?
+  
+  // Relacionamentos
+  procedureId     String
+  procedure       Procedure @relation(fields: [procedureId], references: [id], onDelete: Cascade)
+  
+  // Auditoria
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  
+  @@map("port_validations")
+}
+
+model PortValidationRule {
+  id                String              @id @default(cuid())
+  procedureCode     String              @unique
+  procedureName     String
+  category          ProcedureCategory
+  complexity        ProcedureComplexity
+  minimumPort       Int
+  maximumPort       Int
+  recommendedPort   Int
+  factors           Json // Array of PortFactor
+  isActive          Boolean             @default(true)
+  
+  // Auditoria
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+  
+  @@map("port_validation_rules")
+}
+
+model MaterialRequest {
+  id            String                @id @default(cuid())
+  procedureId   String
+  materialCode  String
+  materialName  String
+  quantity      Int
+  urgency       MaterialUrgency       @default(MEDIUM)
+  requestedBy   String
+  requestedAt   DateTime              @default(now())
+  approvedBy    String?
+  approvedAt    DateTime?
+  status        MaterialRequestStatus @default(PENDING)
+  notes         String?
+  
+  // Auditoria
+  createdAt     DateTime              @default(now())
+  updatedAt     DateTime              @updatedAt
+  
+  @@map("material_requests")
+}
+
+// Enums
+enum ProcedureCategory {
+  GENERAL_SURGERY
+  CARDIAC_SURGERY
+  ORTHOPEDIC_SURGERY
+  NEUROSURGERY
+  PLASTIC_SURGERY
+  GYNECOLOGICAL_SURGERY
+  UROLOGICAL_SURGERY
+  OPHTHALMOLOGICAL_SURGERY
+  OTOLARYNGOLOGICAL_SURGERY
+  VASCULAR_SURGERY
+  THORACIC_SURGERY
+  PEDIATRIC_SURGERY
+  EMERGENCY_SURGERY
+  DIAGNOSTIC_PROCEDURE
+  THERAPEUTIC_PROCEDURE
+}
+
+enum ProcedureStatus {
+  SCHEDULED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+  POSTPONED
+  PENDING_APPROVAL
+  APPROVED
+  REJECTED
+}
+
+enum ProcedureComplexity {
+  LOW
+  MEDIUM
+  HIGH
+  VERY_HIGH
+}
+
+enum AnesthesiaType {
+  LOCAL
+  REGIONAL
+  GENERAL
+  SEDATION
+  NONE
+}
+
+enum SurgicalRole {
+  MAIN_SURGEON
+  ASSISTANT_SURGEON
+  ANESTHESIOLOGIST
+  NURSE
+  TECHNICIAN
+  RESIDENT
+}
+
+enum MaterialStatus {
+  REQUESTED
+  APPROVED
+  DELIVERED
+  USED
+  RETURNED
+  EXPIRED
+  REJECTED
+}
+
+enum MaterialUrgency {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum MaterialRequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  ORDERED
+  DELIVERED
+  CANCELLED
+}
+
