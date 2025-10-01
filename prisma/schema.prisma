@@ -10,27 +10,51 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model Patient {
+  id                    String            @id @default(cuid())
+  fullName              String
+  email                 String?
+  phone                 String?
+  birthDate             DateTime?
+  
+  // Relacionamentos
+  procedures            Procedure[]
+  
+  // Auditoria
+  createdAt             DateTime          @default(now())
+  updatedAt             DateTime          @updatedAt
+  deletedAt             DateTime?
+  
+  @@map("patients")
+}
+
 model Procedure {
   id                    String            @id @default(cuid())
   code                  String            @unique
   name                  String
-  description           String
+  description           String?
   category              ProcedureCategory
+  subcategory           String?
   suggestedPort         Int
   actualPort            Int?
   status                ProcedureStatus   @default(SCHEDULED)
-  scheduledDate         DateTime
+  scheduledDate         DateTime?
   performedDate         DateTime?
-  duration              Int // em minutos
+  duration              Int? // em minutos
+  estimatedDuration     Int? // em minutos
+  basePrice             Decimal?          @db.Decimal(10, 2)
   complexity            ProcedureComplexity
-  anesthesiaType        AnesthesiaType
+  anesthesiaType        AnesthesiaType?
   preOperativeExams     String[]
-  postOperativeInstructions String
+  postOperativeInstructions String?
   complications         String?
   notes                 String?
+  requiresAuthorization Boolean           @default(false)
+  tags                  String[]
   
   // Relacionamentos
   patientId             String
+  patient               Patient           @relation(fields: [patientId], references: [id], onDelete: Cascade)
   surgicalTeam          SurgicalTeamMember[]
   materials             ProcedureMaterial[]
   portValidations       PortValidation[]
@@ -162,6 +186,7 @@ enum ProcedureCategory {
 
 enum ProcedureStatus {
   SCHEDULED
+  CONFIRMED
   IN_PROGRESS
   COMPLETED
   CANCELLED
@@ -176,6 +201,11 @@ enum ProcedureComplexity {
   MEDIUM
   HIGH
   VERY_HIGH
+  PORTE_1
+  PORTE_2
+  PORTE_3
+  PORTE_4
+  PORTE_ESPECIAL
 }
 
 enum AnesthesiaType {
@@ -221,3 +251,23 @@ enum MaterialRequestStatus {
   CANCELLED
 }
 
+
+
+model AuditLog {
+  id            String    @id @default(cuid())
+  action        String
+  entity        String
+  entityId      String
+  userId        String
+  userName      String
+  userRole      String
+  oldValues     Json?
+  newValues     Json?
+  patientId     String?
+  procedureId   String?
+  
+  // Auditoria
+  createdAt     DateTime  @default(now())
+  
+  @@map("audit_logs")
+}

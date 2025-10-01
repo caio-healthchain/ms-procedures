@@ -92,6 +92,39 @@ export class EventBusService {
     }
   }
 
+  // Surgery/Procedure specific event publishers
+  async publishSurgeryCreated(surgery: any): Promise<void> {
+    await this.publishEvent('surgery-created', {
+      eventType: 'SurgeryCreated',
+      surgeryId: surgery.id,
+      data: surgery,
+    });
+  }
+
+  async publishPorteConfirmed(surgery: any): Promise<void> {
+    await this.publishEvent('porte-confirmed', {
+      eventType: 'PorteConfirmed',
+      surgeryId: surgery.id,
+      data: surgery,
+    });
+  }
+
+  async publishSurgeryStatusUpdated(surgery: any): Promise<void> {
+    await this.publishEvent('surgery-status-updated', {
+      eventType: 'SurgeryStatusUpdated',
+      surgeryId: surgery.id,
+      data: surgery,
+    });
+  }
+
+  async publishAuditRequested(auditRequest: any): Promise<void> {
+    await this.publishEvent('audit-requested', {
+      eventType: 'AuditRequested',
+      requestId: `audit-${Date.now()}`,
+      data: auditRequest,
+    });
+  }
+
   // AI Agent specific event publishers
   async publishAIRequestCreated(request: any): Promise<void> {
     await this.publishEvent(config.eventBus.queues.aiRequestCreated, {
