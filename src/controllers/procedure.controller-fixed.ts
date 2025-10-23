@@ -10,40 +10,7 @@ import { logger } from '@/config/logger';
 export class ProcedureController extends BaseController {
   
   /**
-   * @swagger
-   * /api/v1/procedures:
-   *   get:
-   *     summary: Listar procedimentos
-   *     description: Lista todos os procedimentos com paginação e filtros
-   *     tags: [Procedures]
-   *     parameters:
-   *       - in: query
-   *         name: page
-   *         schema:
-   *           type: integer
-   *           default: 1
-   *         description: Número da página
-   *       - in: query
-   *         name: limit
-   *         schema:
-   *           type: integer
-   *           default: 20
-   *         description: Itens por página
-   *       - in: query
-   *         name: search
-   *         schema:
-   *           type: string
-   *         description: Buscar por nome, código ou descrição
-   *       - in: query
-   *         name: status
-   *         schema:
-   *           type: string
-   *         description: Filtrar por status
-   *     responses:
-   *       200:
-   *         description: Lista de procedimentos
-   *       500:
-   *         description: Erro ao buscar procedimentos
+   * Lista procedimentos com paginação
    */
   async list(req: Request, res: Response): Promise<void> {
     try {
@@ -116,24 +83,7 @@ export class ProcedureController extends BaseController {
   }
 
   /**
-   * @swagger
-   * /api/v1/procedures/{id}:
-   *   get:
-   *     summary: Buscar procedimento por ID
-   *     description: Retorna os detalhes de um procedimento específico
-   *     tags: [Procedures]
-   *     parameters:
-   *       - in: path
-   *         name: id
-   *         required: true
-   *         schema:
-   *           type: string
-   *         description: ID do procedimento
-   *     responses:
-   *       200:
-   *         description: Procedimento encontrado
-   *       404:
-   *         description: Procedimento não encontrado
+   * Busca procedimento por ID
    */
   async getById(req: Request, res: Response): Promise<void> {
     try {
@@ -165,41 +115,7 @@ export class ProcedureController extends BaseController {
   }
 
   /**
-   * @swagger
-   * /api/v1/procedures:
-   *   post:
-   *     summary: Criar novo procedimento
-   *     description: Cria um novo procedimento no sistema
-   *     tags: [Procedures]
-   *     requestBody:
-   *       required: true
-   *       content:
-   *         application/json:
-   *           schema:
-   *             type: object
-   *             required:
-   *               - code
-   *               - patientId
-   *             properties:
-   *               code:
-   *                 type: string
-   *               name:
-   *                 type: string
-   *               description:
-   *                 type: string
-   *               patientId:
-   *                 type: string
-   *               category:
-   *                 type: string
-   *               status:
-   *                 type: string
-   *     responses:
-   *       201:
-   *         description: Procedimento criado com sucesso
-   *       400:
-   *         description: Dados inválidos
-   *       500:
-   *         description: Erro ao criar procedimento
+   * Cria novo procedimento
    */
   async create(req: Request, res: Response): Promise<void> {
     try {
@@ -338,50 +254,7 @@ export class ProcedureController extends BaseController {
   }
 
   /**
-   * @swagger
-   * /api/v1/procedures/{id}:
-   *   put:
-   *     summary: Atualizar procedimento
-   *     description: Atualiza os dados de um procedimento existente
-   *     tags: [Procedures]
-   *     parameters:
-   *       - in: path
-   *         name: id
-   *         required: true
-   *         schema:
-   *           type: string
-   *         description: ID do procedimento
-   *     requestBody:
-   *       required: true
-   *       content:
-   *         application/json:
-   *           schema:
-   *             type: object
-   *             properties:
-   *               name:
-   *                 type: string
-   *               description:
-   *                 type: string
-   *               status:
-   *                 type: string
-   *               actualPort:
-   *                 type: integer
-   *               performedDate:
-   *                 type: string
-   *                 format: date-time
-   *               duration:
-   *                 type: integer
-   *               complications:
-   *                 type: string
-   *               notes:
-   *                 type: string
-   *     responses:
-   *       200:
-   *         description: Procedimento atualizado com sucesso
-   *       404:
-   *         description: Procedimento não encontrado
-   *       500:
-   *         description: Erro ao atualizar procedimento
+   * Atualiza procedimento
    */
   async update(req: Request, res: Response): Promise<void> {
     try {
@@ -437,26 +310,7 @@ export class ProcedureController extends BaseController {
   }
 
   /**
-   * @swagger
-   * /api/v1/procedures/{id}:
-   *   delete:
-   *     summary: Deletar procedimento
-   *     description: Remove um procedimento do sistema (soft delete)
-   *     tags: [Procedures]
-   *     parameters:
-   *       - in: path
-   *         name: id
-   *         required: true
-   *         schema:
-   *           type: string
-   *         description: ID do procedimento
-   *     responses:
-   *       200:
-   *         description: Procedimento deletado com sucesso
-   *       404:
-   *         description: Procedimento não encontrado
-   *       500:
-   *         description: Erro ao deletar procedimento
+   * Deleta procedimento (soft delete)
    */
   async delete(req: Request, res: Response): Promise<void> {
     try {
@@ -492,35 +346,7 @@ export class ProcedureController extends BaseController {
   }
 
   /**
-   * @swagger
-   * /api/v1/procedures/validate-porte:
-   *   post:
-   *     summary: Validar porte de procedimento
-   *     description: Valida o porte informado de um procedimento contra as regras cadastradas
-   *     tags: [Procedures]
-   *     requestBody:
-   *       required: true
-   *       content:
-   *         application/json:
-   *           schema:
-   *             type: object
-   *             required:
-   *               - procedureCode
-   *               - reportedPorte
-   *             properties:
-   *               procedureCode:
-   *                 type: string
-   *                 description: Código do procedimento
-   *               reportedPorte:
-   *                 type: string
-   *                 description: Porte informado
-   *     responses:
-   *       200:
-   *         description: Validação realizada com sucesso
-   *       400:
-   *         description: Dados inválidos
-   *       500:
-   *         description: Erro ao validar porte
+   * Valida porte de um procedimento
    */
   async validatePorte(req: Request, res: Response): Promise<void> {
     try {

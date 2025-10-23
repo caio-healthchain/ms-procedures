@@ -40,7 +40,7 @@ router.get('/', async (req: Request, res: Response) => {
     const health = {
       status: 'healthy',
       timestamp: new Date().toISOString(),
-      service: 'ms-patients',
+      service: 'ms-procedures',
       version: '1.0.0',
       uptime: process.uptime(),
       environment: config.nodeEnv,
@@ -51,7 +51,7 @@ router.get('/', async (req: Request, res: Response) => {
     res.status(503).json({
       status: 'unhealthy',
       timestamp: new Date().toISOString(),
-      service: 'ms-patients',
+      service: 'ms-procedures',
       error: error instanceof Error ? error.message : 'Unknown error',
     });
   }
@@ -119,7 +119,7 @@ router.get('/detailed', async (req: Request, res: Response) => {
     const response = {
       status: overallStatus,
       timestamp: new Date().toISOString(),
-      service: 'ms-patients',
+      service: 'ms-procedures',
       version: '1.0.0',
       uptime: process.uptime(),
       environment: config.nodeEnv,
@@ -136,7 +136,7 @@ router.get('/detailed', async (req: Request, res: Response) => {
     res.status(503).json({
       status: 'unhealthy',
       timestamp: new Date().toISOString(),
-      service: 'ms-patients',
+      service: 'ms-procedures',
       error: error instanceof Error ? error.message : 'Unknown error',
       checks,
     });

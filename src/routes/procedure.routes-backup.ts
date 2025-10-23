@@ -12,10 +12,7 @@ const controller = new ProcedureController();
  *   description: Operações relacionadas a procedures
  */
 
-// Validação de porte (deve vir antes das rotas com :id)
-router.post('/validate-porte', asyncHandler(controller.validatePorte.bind(controller)));
-
-// CRUD routes
+// CRUD routes (sem auth para demonstração)
 router.get('/', asyncHandler(controller.list.bind(controller)));
 router.get('/:id', asyncHandler(controller.getById.bind(controller)));
 router.post('/', asyncHandler(controller.create.bind(controller)));
@@ -23,4 +20,3 @@ router.put('/:id', asyncHandler(controller.update.bind(controller)));
 router.delete('/:id', asyncHandler(controller.delete.bind(controller)));
 
 export default router;
-

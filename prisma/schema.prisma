@@ -30,7 +30,7 @@ model Patient {
 
 model Procedure {
   id                    String            @id @default(cuid())
-  code                  String            @unique
+  code                  String
   name                  String
   description           String?
   category              ProcedureCategory
