@@ -6,14 +6,14 @@
 
 import { ProceduresMCPServer } from './server';
 import { logger } from '../config/logger';
-import { connectDatabase } from '../config/database';
+import { connectDatabases } from '../config/database';
 
 async function main() {
   try {
     logger.info('[MCP] Iniciando MCP Server do ms-procedures...');
 
     // Conectar ao banco de dados
-    await connectDatabase();
+    await connectDatabases();
     logger.info('[MCP] Banco de dados conectado');
 
     // Iniciar servidor MCP
