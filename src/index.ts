@@ -18,6 +18,7 @@ import baseRoutes from './routes/base.routes';
 import procedureRoutes from './routes/procedure.routes';
 import surgeryRoutes from './routes/surgery.routes';
 import healthRoutes from './routes/health.routes';
+import analyticsRoutes from './routes/analytics.routes';
 
 class msproceduresService {
   private app: express.Application;
@@ -83,6 +84,7 @@ class msproceduresService {
     this.app.use('/api/v1', baseRoutes);
     this.app.use('/api/v1/procedures', procedureRoutes);
     this.app.use('/api/v1/surgeries', surgeryRoutes);
+    this.app.use('/api/v1/analytics', analyticsRoutes);
 
     // Root endpoint
     this.app.get('/', (req, res) => {

@@ -12,10 +12,13 @@
     "test:coverage": "jest --coverage",
     "lint": "eslint src/**/*.ts",
     "lint:fix": "eslint src/**/*.ts --fix",
-    "clean": "rm -rf dist"
+    "clean": "rm -rf dist",
+    "mcp": "ts-node src/mcp/start-mcp.ts",
+    "mcp:build": "tsc && node dist/mcp/start-mcp.js"
   },
   "dependencies": {
     "@azure/service-bus": "^7.9.5",
+    "@modelcontextprotocol/sdk": "^1.22.0",
     "@prisma/client": "^5.7.0",
     "bcryptjs": "^2.4.3",
     "compression": "^1.7.4",
