@@ -28,6 +28,24 @@ model Patient {
   @@map("patients")
 }
 
+model Hospital {
+  id                    String            @id
+  name                  String
+  cnpj                  String?
+  address               String?
+  phone                 String?
+  email                 String?
+  
+  // Relacionamentos
+  procedures            Procedure[]
+  
+  // Auditoria
+  createdAt             DateTime          @default(now())
+  updatedAt             DateTime          @updatedAt
+  
+  @@map("hospitals")
+}
+
 model Procedure {
   id                    String            @id @default(cuid())
   code                  String
@@ -55,6 +73,8 @@ model Procedure {
   // Relacionamentos
   patientId             String
   patient               Patient           @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  hospitalId            String            @default("hosp_sagrada_familia_001")
+  hospital              Hospital          @relation(fields: [hospitalId], references: [id])
   surgicalTeam          SurgicalTeamMember[]
   materials             ProcedureMaterial[]
   portValidations       PortValidation[]

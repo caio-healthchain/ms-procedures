@@ -200,8 +200,9 @@ class ProceduresMCPServer {
     const period = args?.period || 'month';
     const date = args?.date ? new Date(args.date) : new Date();
     const limit = args?.limit || 10;
+    const hospitalId = args?.hospitalId || 'hosp_sagrada_familia_001';
 
-    const topProcedures = await analyticsService.getTopProcedures(period, date, limit);
+    const topProcedures = await analyticsService.getTopProcedures(period, date, limit, hospitalId);
 
     return {
       content: [
@@ -216,8 +217,9 @@ class ProceduresMCPServer {
   private async handleGetStatistics(args: any) {
     const period = args?.period || 'month';
     const date = args?.date ? new Date(args.date) : new Date();
+    const hospitalId = args?.hospitalId || 'hosp_sagrada_familia_001';
 
-    const stats = await analyticsService.getProcedureStats(period, date);
+    const stats = await analyticsService.getProcedureStats(period, date, hospitalId);
 
     return {
       content: [
@@ -232,8 +234,9 @@ class ProceduresMCPServer {
   private async handleGetEfficiency(args: any) {
     const period = args?.period || 'month';
     const date = args?.date ? new Date(args.date) : new Date();
+    const hospitalId = args?.hospitalId || 'hosp_sagrada_familia_001';
 
-    const efficiency = await analyticsService.getEfficiencyMetrics(period, date);
+    const efficiency = await analyticsService.getEfficiencyMetrics(period, date, hospitalId);
 
     return {
       content: [
@@ -252,8 +255,9 @@ class ProceduresMCPServer {
 
     const period = args.period || 'month';
     const date = args.date ? new Date(args.date) : new Date();
+    const hospitalId = args?.hospitalId || 'hosp_sagrada_familia_001';
 
-    const analysis = await analyticsService.getCategoryAnalysis(args.category, period, date);
+    const analysis = await analyticsService.getCategoryAnalysis(args.category, period, date, hospitalId);
 
     return {
       content: [
@@ -269,8 +273,9 @@ class ProceduresMCPServer {
     const period = args?.period || 'day';
     const date = args?.date ? new Date(args.date) : new Date();
     const status = args?.status;
+    const hospitalId = args?.hospitalId || 'hosp_sagrada_familia_001';
 
-    const procedures = await analyticsService.getProceduresByPeriod(period, date, status);
+    const procedures = await analyticsService.getProceduresByPeriod(period, date, status, hospitalId);
 
     return {
       content: [

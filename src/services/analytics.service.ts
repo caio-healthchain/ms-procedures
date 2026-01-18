@@ -54,24 +54,29 @@ export interface CategoryAnalysis {
 }
 
 export class AnalyticsService {
+  private hospitalId: string = 'hosp_sagrada_familia_001';
+
   /**
    * Retorna os procedimentos mais realizados
    */
   async getTopProcedures(
     period: string = 'month',
     date: Date = new Date(),
-    limit: number = 10
+    limit: number = 10,
+    hospitalId?: string
   ): Promise<TopProcedure[]> {
     try {
+      const hId = hospitalId || this.hospitalId;
       const { startDate, endDate } = this.getPeriodDates(period, date);
 
       const procedures = await prisma.procedure.groupBy({
         by: ['code', 'name', 'category'],
         where: {
-          status: 'COMPLETED',
+          hospitalId: hId,
           performedDate: {
             gte: startDate,
-            lte: endDate
+            lte: endDate,
+            not: null
           }
         },
         _count: {
@@ -107,12 +112,14 @@ export class AnalyticsService {
   /**
    * Retorna estatísticas gerais de procedimentos
    */
-  async getProcedureStats(period: string = 'month', date: Date = new Date()): Promise<ProcedureStats> {
+  async getProcedureStats(period: string = 'month', date: Date = new Date(), hospitalId?: string): Promise<ProcedureStats> {
     try {
+      const hId = hospitalId || this.hospitalId;
       const { startDate, endDate } = this.getPeriodDates(period, date);
 
       const total_procedimentos = await prisma.procedure.count({
         where: {
+          hospitalId: hId,
           createdAt: {
             gte: startDate,
             lte: endDate
@@ -122,16 +129,18 @@ export class AnalyticsService {
 
       const realizados = await prisma.procedure.count({
         where: {
-          status: 'COMPLETED',
+          hospitalId: hId,
           performedDate: {
             gte: startDate,
-            lte: endDate
+            lte: endDate,
+            not: null
           }
         }
       });
 
       const agendados = await prisma.procedure.count({
         where: {
+          hospitalId: hId,
           status: 'SCHEDULED',
           scheduledDate: {
             gte: startDate,
@@ -142,6 +151,7 @@ export class AnalyticsService {
 
       const cancelados = await prisma.procedure.count({
         where: {
+          hospitalId: hId,
           status: 'CANCELLED',
           createdAt: {
             gte: startDate,
@@ -152,10 +162,11 @@ export class AnalyticsService {
 
       const aggregates = await prisma.procedure.aggregate({
         where: {
-          status: 'COMPLETED',
+          hospitalId: hId,
           performedDate: {
             gte: startDate,
-            lte: endDate
+            lte: endDate,
+            not: null
           }
         },
         _avg: {
@@ -171,12 +182,13 @@ export class AnalyticsService {
       const byCategory = await prisma.procedure.groupBy({
         by: ['category'],
         where: {
-          status: 'COMPLETED',
+          hospitalId: hId,
           performedDate: {
             gte: startDate,
-            lte: endDate
+            lte: endDate,
+            not: null
           }
-        },
+        } as any,
         _count: {
           id: true
         }
@@ -192,12 +204,13 @@ export class AnalyticsService {
       const byComplexity = await prisma.procedure.groupBy({
         by: ['complexity'],
         where: {
-          status: 'COMPLETED',
+          hospitalId: hId,
           performedDate: {
             gte: startDate,
-            lte: endDate
+            lte: endDate,
+            not: null
           }
-        },
+        } as any,
         _count: {
           id: true
         }
@@ -230,16 +243,18 @@ export class AnalyticsService {
   /**
    * Retorna métricas de eficiência operacional
    */
-  async getEfficiencyMetrics(period: string = 'month', date: Date = new Date()): Promise<ProcedureEfficiency> {
+  async getEfficiencyMetrics(period: string = 'month', date: Date = new Date(), hospitalId?: string): Promise<ProcedureEfficiency> {
     try {
+      const hId = hospitalId || this.hospitalId;
       const { startDate, endDate } = this.getPeriodDates(period, date);
 
       const procedures = await prisma.procedure.findMany({
         where: {
-          status: 'COMPLETED',
+          hospitalId: hId,
           performedDate: {
             gte: startDate,
-            lte: endDate
+            lte: endDate,
+            not: null
           }
         },
         select: {
@@ -297,27 +312,29 @@ export class AnalyticsService {
   async getCategoryAnalysis(
     category: ProcedureCategory,
     period: string = 'month',
-    date: Date = new Date()
+    date: Date = new Date(),
+    hospitalId?: string
   ): Promise<CategoryAnalysis> {
     try {
+      const hId = hospitalId || this.hospitalId;
       const { startDate, endDate } = this.getPeriodDates(period, date);
+      const categoryStr = String(category);
 
-      const procedures = await prisma.procedure.findMany({
-        where: {
-          category,
-          status: 'COMPLETED',
-          performedDate: {
-            gte: startDate,
-            lte: endDate
-          }
-        },
-        select: {
-          basePrice: true,
-          duration: true,
-          complexity: true,
-          complications: true
-        }
-      });
+      // Usar raw query para evitar problemas com tipos de enum
+      const procedures = await prisma.$queryRaw`
+        SELECT 
+          "basePrice",
+          duration,
+          complexity,
+          complications
+        FROM procedures
+        WHERE 
+          "hospitalId" = ${hId}
+          AND category = ${categoryStr}
+          AND "performedDate" >= ${startDate}
+          AND "performedDate" <= ${endDate}
+          AND "performedDate" IS NOT NULL
+      ` as any[];
 
       const total_procedimentos = procedures.length;
       const valor_total = procedures.reduce((sum, p) => sum + Number(p.basePrice || 0), 0);
@@ -346,12 +363,15 @@ export class AnalyticsService {
   async getProceduresByPeriod(
     period: string = 'day',
     date: Date = new Date(),
-    status?: ProcedureStatus
+    status?: ProcedureStatus,
+    hospitalId?: string
   ) {
     try {
+      const hId = hospitalId || this.hospitalId;
       const { startDate, endDate } = this.getPeriodDates(period, date);
 
       const whereClause: any = {
+        hospitalId: hId,
         performedDate: {
           gte: startDate,
           lte: endDate
