@@ -169,4 +169,27 @@ export class AnalyticsController {
       });
     }
   }
+
+  /**
+   * GET /api/v1/analytics/procedures/history
+   * Retorna histórico completo de procedimentos realizados
+   */
+  async getProceduresHistory(req: Request, res: Response): Promise<void> {
+    try {
+      logger.info('[Analytics] Buscando histórico completo de procedimentos');
+
+      const history = await this.analyticsService.getProceduresHistory();
+
+      res.json({
+        success: true,
+        data: history
+      });
+    } catch (error) {
+      logger.error('[Analytics] Erro ao buscar histórico de procedimentos:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Erro ao buscar histórico de procedimentos'
+      });
+    }
+  }
 }

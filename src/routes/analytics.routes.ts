@@ -149,4 +149,18 @@ router.get('/procedures/by-period', (req, res) =>
   analyticsController.getProceduresByPeriod(req, res)
 );
 
+/**
+ * @swagger
+ * /api/v1/analytics/procedures/history:
+ *   get:
+ *     summary: Retorna histórico completo de todos os procedimentos realizados
+ *     tags: [Analytics]
+ *     responses:
+ *       200:
+ *         description: Histórico completo de procedimentos
+ */
+router.get('/procedures/history', (req, res) => 
+  analyticsController.getProceduresHistory(req, res)
+);
+
 export default router;

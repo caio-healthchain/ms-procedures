@@ -413,6 +413,120 @@ export class AnalyticsService {
   }
 
   /**
+   * Retorna histórico completo de procedimentos (todos os procedimentos realizados)
+   */
+  async getProceduresHistory(hospitalId?: string) {
+    try {
+      const hId = hospitalId || this.hospitalId;
+
+      const procedures = await prisma.procedure.findMany({
+        where: {
+          hospitalId: hId,
+          performedDate: {
+            not: null
+          }
+        },
+        select: {
+          id: true,
+          code: true,
+          name: true,
+          category: true,
+          status: true,
+          performedDate: true,
+          scheduledDate: true,
+          duration: true,
+          basePrice: true,
+          complexity: true,
+          requiresAuthorization: true,
+          patient: {
+            select: {
+              fullName: true
+            }
+          }
+        },
+        orderBy: {
+          performedDate: 'desc'
+        }
+      });
+
+      // Calcular estatísticas agregadas
+      const totalProcedimentos = procedures.length;
+      const valorTotal = procedures.reduce((sum, p) => sum + Number(p.basePrice || 0), 0);
+      const duracaoTotal = procedures.reduce((sum, p) => sum + Number(p.duration || 0), 0);
+      const duracaoMedia = totalProcedimentos > 0 ? duracaoTotal / totalProcedimentos : 0;
+      const valorMedio = totalProcedimentos > 0 ? valorTotal / totalProcedimentos : 0;
+
+      // Agrupar por categoria
+      const porCategoria = procedures.reduce((acc, proc) => {
+        const existing = acc.find(c => c.categoria === proc.category);
+        if (existing) {
+          existing.quantidade++;
+          existing.valor += Number(proc.basePrice || 0);
+        } else {
+          acc.push({
+            categoria: proc.category,
+            quantidade: 1,
+            valor: Number(proc.basePrice || 0),
+            percentual: 0
+          });
+        }
+        return acc;
+      }, [] as Array<{ categoria: string; quantidade: number; valor: number; percentual: number }>);
+
+      porCategoria.forEach(cat => {
+        cat.percentual = (cat.quantidade / totalProcedimentos) * 100;
+      });
+
+      // Agrupar por complexidade
+      const porComplexidade = procedures.reduce((acc, proc) => {
+        const existing = acc.find(c => c.complexidade === proc.complexity);
+        if (existing) {
+          existing.quantidade++;
+        } else {
+          acc.push({
+            complexidade: proc.complexity,
+            quantidade: 1,
+            percentual: 0
+          });
+        }
+        return acc;
+      }, [] as Array<{ complexidade: string; quantidade: number; percentual: number }>);
+
+      porComplexidade.forEach(comp => {
+        comp.percentual = (comp.quantidade / totalProcedimentos) * 100;
+      });
+
+      return {
+        resumo: {
+          total_procedimentos: totalProcedimentos,
+          valor_total: Number(valorTotal.toFixed(2)),
+          valor_medio: Number(valorMedio.toFixed(2)),
+          duracao_media: Number(duracaoMedia.toFixed(2)),
+          por_categoria: porCategoria,
+          por_complexidade: porComplexidade
+        },
+        procedimentos: procedures.map(p => ({
+          id: p.id,
+          codigo: p.code,
+          nome: p.name,
+          categoria: p.category,
+          complexidade: p.complexity,
+          status: p.status,
+          valor: Number(p.basePrice || 0),
+          duracao: p.duration,
+          data_realizada: p.performedDate,
+          data_agendada: p.scheduledDate,
+          paciente: p.patient?.fullName || 'Desconhecido',
+          requer_autorizacao: p.requiresAuthorization
+        }))
+      };
+    } catch (error) {
+      logger.error('[Analytics] Erro ao buscar histórico de procedimentos:', error);
+      throw error;
+    }
+  }
+
+  /**
    * Helper para calcular datas do período
    */
   private getPeriodDates(period: string, date: Date): { startDate: Date; endDate: Date } {

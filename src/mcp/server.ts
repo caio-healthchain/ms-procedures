@@ -127,6 +127,14 @@ const TOOLS: Tool[] = [
       },
     },
   },
+  {
+    name: 'get_procedures_history',
+    description: 'Retorna o histórico completo de todos os procedimentos realizados (sem filtro de período). Útil para responder "Quantos procedimentos foram realizados?" ou "Qual é o total de procedimentos?"',
+    inputSchema: {
+      type: 'object',
+      properties: {},
+    },
+  },
 ];
 
 class ProceduresMCPServer {
@@ -177,6 +185,9 @@ class ProceduresMCPServer {
 
           case 'get_procedures_by_period':
             return await this.handleGetProceduresByPeriod(args);
+
+          case 'get_procedures_history':
+            return await this.handleGetProceduresHistory(args);
 
           default:
             throw new Error(`Tool desconhecida: ${name}`);
@@ -282,6 +293,21 @@ class ProceduresMCPServer {
         {
           type: 'text',
           text: JSON.stringify(procedures, null, 2),
+        },
+      ],
+    };
+  }
+
+  private async handleGetProceduresHistory(args: any) {
+    const hospitalId = args?.hospitalId || 'hosp_sagrada_familia_001';
+
+    const history = await analyticsService.getProceduresHistory(hospitalId);
+
+    return {
+      content: [
+        {
+          type: 'text',
+          text: JSON.stringify(history, null, 2),
         },
       ],
     };
